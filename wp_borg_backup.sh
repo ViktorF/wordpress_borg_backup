@@ -4,7 +4,7 @@
 
 # wp_borg_backup.sh:
 #
-#   - Installs, initializes and performs borg backup on Wordpress sites
+#   - Initializes and performs borg backup on Wordpress sites
 #   - More details at https://github.com/pratiktri/wordpress_borg_backup
 #
 # Usage:
@@ -35,11 +35,6 @@
     # Best Practice 
         # Pretty print STDOUT
 
-# TODO - Check on other OSes
-    # Ubuntu 16, 18, 18.08
-    # Debian 8, 9
-    # Tested on Debian 10
-
 #### Bash Strict mode
 # Catch the error in case mysqldump fails (but gzip succeeds) in `mysqldump |gzip`
 set -o pipefail
@@ -54,12 +49,6 @@ set -o errtrace
 [[ "$(id --user)" != "0" ]] && {
     echo -e "ERROR: You must be root to run this script.\nUse sudo and execute the script again."
     exit 1
-}
-
-# No apt - no good
-! (type apt-get > /dev/null 2>&1) && {
-    echo -e "ERROR: This script works only on Debian and Debian-derivatives that use 'apt'"
-    exit 2
 }
 
 
@@ -225,13 +214,10 @@ main() {
 
     ################################### Prepare the System ###################################
 
-    # Install "borgbackup" if NOT installed
+    # Check if borgbackup is installed
     if ! (type borg > /dev/null 2>&1); then
-        if apt-get install --yes borgbackup >> "${LOGFILE}" 2>&1; then
-            echo "borgbackup installed successfully" | tee -a "${LOGFILE}"
-        else
-            echo "ERROR: installing borgbackup. Check the log for more details" 2>STDERR | tee -a "${LOGFILE}"
-            exit 11
+        echo "ERROR: borgbackup is not installed" 2>STDERR | tee -a "${LOGFILE}"
+        exit 11
         fi
     fi
 
